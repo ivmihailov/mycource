@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Конструктор урока{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'courses:update' course.slug %}">{{ course.title }}</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>{{ lesson.title }}</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {% include "lessons/partials/builder_shell.html" %}
+{% endblock %}

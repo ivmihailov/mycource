@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8" data-ui="home-hero">
+        <div class="hero-layout">
+            <div>
+                {% include "partials/page_header.html" with eyebrow="Платформа интерактивных курсов" title="Создавайте понятные курсы и проходите их в рабочем учебном ритме" description="«Мой Курс» помогает авторам собирать учебный материал в структурированные курсы, а студентам — проходить уроки, тесты и практические задания без перегруженного интерфейса." action_url="/courses/" action_label="Открыть каталог" secondary_action_url="/courses/create/" secondary_action_label="Создать курс" %}
+                <div class="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                    <div class="surface-muted p-5">
+                        <p class="font-semibold">Что уже работает в MVP</p>
+                        <ul class="mt-3 space-y-2 muted-text text-sm">
+                            <li>Каталог курсов, отзывы, комментарии и избранное.</li>
+                            <li>Конструктор курсов, уроков и контентных блоков.</li>
+                            <li>Тесты, попытки прохождения и прогресс обучения.</li>
+                            <li>Подтверждение email, Swagger API и mock-советы ИИ.</li>
+                        </ul>
+                    </div>
+                    <div class="surface-muted p-5">
+                        <p class="font-semibold">Быстрые переходы</p>
+                        <div class="mt-4 inline-actions">
+                            <a href="{% url 'courses:catalog' %}" class="btn btn-secondary btn-sm">Каталог</a>
+                            {% if request.user.is_authenticated %}
+                                <a href="{% url 'learning:overview' %}" class="btn btn-secondary btn-sm">Мое обучение</a>
+                                <a href="{% url 'courses:my_courses' %}" class="btn btn-secondary btn-sm">Мои курсы</a>
+                            {% else %}
+                                <a href="{% url 'users:register' %}" class="btn btn-secondary btn-sm">Регистрация</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="illustration-panel">
+                <img src="{% static 'images/illustrations/home-learning.svg' %}" alt="Иллюстрация учебной платформы" class="illustration-panel__image">
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[1.5fr_0.9fr]">
+        <section class="surface-panel p-6">
+            {% include "partials/section_header.html" with title="Новые курсы" description="Свежие опубликованные материалы, доступные для изучения." action_url="/courses/" action_label="Весь каталог" %}
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {% for course in new_courses %}
+                    {% include "courses/partials/course_card.html" with course=course %}
+                {% empty %}
+                    {% include "partials/empty_state.html" with title="Курсы скоро появятся" description="После наполнения проекта здесь будет подборка новых материалов." image_path="images/illustrations/empty-courses.svg" %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <aside class="surface-panel p-6">
+            {% include "partials/section_header.html" with title="Категории" description="Быстрый переход к основным тематическим разделам." %}
+            <div class="flex flex-wrap gap-2">
+                {% for category in categories %}
+                    <a href="{% url 'courses:catalog' %}?category={{ category.pk }}" class="chip chip-primary">{{ category.name }}</a>
+                {% empty %}
+                    {% include "partials/empty_state.html" with description="Категории появятся после заполнения демо-данных." %}
+                {% endfor %}
+            </div>
+        </aside>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+        <section class="surface-panel p-6">
+            {% include "partials/section_header.html" with title="Популярные курсы" description="Курсы, которые чаще всего открывают пользователи." %}
+            <div class="stack-list">
+                {% for course in popular_courses %}
+                    <a href="{{ course.get_absolute_url }}" class="list-row">
+                        <div>
+                            <p class="font-semibold">{{ course.title }}</p>
+                            <p class="muted-text text-sm mt-1">{{ course.short_description }}</p>
+                        </div>
+                        <div class="text-right text-sm muted-text">
+                            <div>{{ course.view_count }} просмотров</div>
+                            <div class="mt-1">{{ course.get_level_display }}</div>
+                        </div>
+                    </a>
+                {% empty %}
+                    {% include "partials/empty_state.html" with description="Популярность появится после первых просмотров." %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="surface-panel p-6">
+            {% if request.user.is_authenticated %}
+                {% include "partials/section_header.html" with title="Активное обучение" description="Курсы, к которым вы уже приступили." action_url="/learning/" action_label="Открыть обучение" %}
+                <div class="stack-list">
+                    {% for progress in active_courses %}
+                        <a href="{% url 'learning:start_course' progress.course.slug %}" class="list-row">
+                            <div>
+                                <p class="font-semibold">{{ progress.course.title }}</p>
+                                <p class="muted-text text-sm mt-1">Прогресс: {{ progress.progress_percent }}%</p>
+                            </div>
+                            <span class="chip chip-primary">Продолжить</span>
+                        </a>
+                    {% empty %}
+                        {% include "partials/empty_state.html" with title="Вы пока не начали обучение" description="Откройте каталог и выберите курс для старта." action_url="/courses/" action_label="Перейти в каталог" image_path="images/illustrations/empty-learning.svg" %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% include "partials/section_header.html" with title="Для студентов и авторов" description="После входа станет доступен прогресс обучения, создание курсов и персональные разделы." %}
+                {% include "partials/empty_state.html" with description="Войдите или создайте аккаунт, чтобы проходить курсы и публиковать собственные материалы." action_url="/accounts/register/" action_label="Создать аккаунт" image_path="images/illustrations/empty-learning.svg" %}
+            {% endif %}
+        </section>
+    </div>
+</section>
+{% endblock %}

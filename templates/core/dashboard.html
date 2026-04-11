@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:home' %}">Главная</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Кабинет</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Личный кабинет" title="Ваш рабочий центр" description="Отсюда удобно перейти к обучению, управлению курсами, черновикам и профилю." %}
+        <div class="dashboard-grid mt-6" data-ui="dashboard-grid">
+            <a href="{% url 'learning:overview' %}" class="stat-card">
+                <p class="stat-card__label">Активное обучение</p>
+                <p class="stat-card__value">{{ active_learning_count }}</p>
+            </a>
+            <a href="{% url 'courses:my_courses' %}" class="stat-card">
+                <p class="stat-card__label">Мои курсы</p>
+                <p class="stat-card__value">{{ my_courses_count }}</p>
+            </a>
+            <a href="{% url 'courses:drafts' %}" class="stat-card">
+                <p class="stat-card__label">Черновики</p>
+                <p class="stat-card__value">{{ drafts_count }}</p>
+            </a>
+            <a href="{% url 'learning:favorites' %}" class="stat-card">
+                <p class="stat-card__label">Избранное</p>
+                <p class="stat-card__value">{{ favorites_count }}</p>
+            </a>
+        </div>
+        <div class="inline-actions mt-6">
+            <a href="{% url 'users:profile' %}" class="btn btn-secondary">Открыть профиль</a>
+            <a href="{% url 'courses:create' %}" class="btn btn-primary">Создать курс</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% if messages %}
+    <div class="page-stack" data-ui="flash-messages">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}" role="status">
+                <div>{{ message }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

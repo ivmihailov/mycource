@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Черновики{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:dashboard' %}">Кабинет</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Черновики</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Раздел автора" title="Черновики" description="Неопубликованные курсы, доступные только вам и staff-пользователям." action_url="/courses/create/" action_label="Новый черновик" %}
+    </div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for course in courses %}
+            {% include "courses/partials/course_card.html" with course=course %}
+        {% empty %}
+            {% include "partials/empty_state.html" with title="Черновиков нет" description="Создайте новый курс, чтобы начать работу над структурой и содержанием." action_url="/courses/create/" action_label="Создать курс" image_path="images/illustrations/empty-drafts.svg" %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'users:profile' %}">Профиль</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Редактирование</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Профиль" title="Редактирование профиля" description="Обновите основные персональные данные и информацию о себе." %}
+    <form method="post" enctype="multipart/form-data" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            <a href="{% url 'users:profile' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

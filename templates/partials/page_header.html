@@ -1,0 +1,19 @@
+<div class="page-header" data-ui="page-header">
+    <div class="page-header__content">
+        {% if eyebrow %}
+            <p class="page-eyebrow">{{ eyebrow }}</p>
+        {% endif %}
+        <h1 class="page-title">{{ title }}</h1>
+        {% if description %}
+            <p class="page-description">{{ description }}</p>
+        {% endif %}
+    </div>
+    {% if action_url and action_label %}
+        <div class="inline-actions page-header__actions">
+            <a href="{{ action_url }}" class="btn {% if action_variant %}btn-{{ action_variant }}{% else %}btn-primary{% endif %}">{{ action_label }}</a>
+            {% if secondary_action_url and secondary_action_label %}
+                <a href="{{ secondary_action_url }}" class="btn btn-secondary">{{ secondary_action_label }}</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>

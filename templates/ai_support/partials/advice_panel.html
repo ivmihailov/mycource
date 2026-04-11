@@ -1,0 +1,9 @@
+<div class="surface-muted p-4" data-ui="ai-advice-panel">
+    <div class="flex flex-wrap items-center gap-2">
+        {% include "partials/status_badge.html" with label="Mock AI" tone="primary" %}
+        {% include "partials/status_badge.html" with label=context_type|default:"Совет" tone="warning" %}
+    </div>
+    <h3 class="font-semibold mt-3">{{ advice.title }}</h3>
+    <p class="muted-text text-sm mt-2">{{ advice.body }}</p>
+    <p class="muted-text text-xs mt-3">TODO: здесь будет реальная интеграция LLM, аудит запросов и ограничения безопасности.</p>
+</div>

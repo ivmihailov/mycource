@@ -1,0 +1,50 @@
+{% if add_after_id == slot_after_id %}
+    <section class="surface-muted p-5 builder-add-slot" data-ui="builder-add-form">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Новый блок</h2>
+                <p class="section-description">Выберите тип контента и добавьте блок прямо в структуру урока.</p>
+            </div>
+        </div>
+        <form
+            method="post"
+            enctype="multipart/form-data"
+            action="{% url 'lessons:block_create' course.slug lesson.slug %}"
+            hx-post="{% url 'lessons:block_create' course.slug lesson.slug %}"
+            hx-target="#lesson-builder-shell"
+            hx-swap="outerHTML"
+            hx-encoding="multipart/form-data"
+            class="form-stack"
+        >
+            {% csrf_token %}
+            <input type="hidden" name="builder_mode" value="1">
+            <input type="hidden" name="after_id" value="{{ slot_after_id }}">
+            {% include "partials/form_errors.html" with form=add_form %}
+            {% include "lessons/partials/block_form_fields.html" with form=add_form show_type_selector=True current_block_type=add_block_type %}
+            <div class="inline-actions">
+                <button type="submit" class="btn btn-primary">Сохранить блок</button>
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    hx-get="{{ lesson.get_builder_url }}?partial=shell"
+                    hx-target="#lesson-builder-shell"
+                    hx-swap="outerHTML"
+                >
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </section>
+{% else %}
+    <div class="builder-add-anchor">
+        <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            hx-get="{{ lesson.get_builder_url }}?partial=shell&add_after={{ slot_after_id }}"
+            hx-target="#lesson-builder-shell"
+            hx-swap="outerHTML"
+        >
+            + Добавить блок сюда
+        </button>
+    </div>
+{% endif %}

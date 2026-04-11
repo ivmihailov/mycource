@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'courses:detail' course.slug %}">{{ course.title }}</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>{{ lesson.title }}</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <details class="surface-panel p-5 lesson-contents-toggle lg:hidden" data-ui="lesson-contents-toggle">
+        <summary class="lesson-contents-toggle__summary">
+            <span class="font-semibold">Содержание курса</span>
+            <span class="muted-text text-sm">{{ sidebar_lessons|length }} урок(ов)</span>
+        </summary>
+        <div class="mt-4">
+            {% include "learning/partials/course_sidebar.html" %}
+        </div>
+    </details>
+
+    <div class="lesson-layout lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[19.5rem_minmax(0,1fr)] lg:items-start lg:gap-6" data-ui="lesson-layout-desktop">
+        <aside class="surface-panel p-6 lesson-sidebar hidden lg:block" data-ui="lesson-sidebar">
+            {% include "learning/partials/course_sidebar.html" %}
+        </aside>
+
+        <div class="page-stack" data-ui="lesson-content">
+            <section class="surface-panel p-8">
+                {% include "partials/page_header.html" with eyebrow="Урок" title=lesson.title description=lesson.short_description %}
+                <div class="inline-actions mt-4">
+                    {% if lesson_progress and lesson_progress.status == lesson_progress.Status.COMPLETED %}
+                        {% include "partials/status_badge.html" with label="Урок завершен" tone="success" %}
+                    {% elif quiz_blocks %}
+                        {% include "partials/status_badge.html" with label="Требуется успешный тест" tone="warning" %}
+                    {% else %}
+                        {% include "partials/status_badge.html" with label="Можно завершить вручную" tone="primary" %}
+                    {% endif %}
+                    <button
+                        type="button"
+                        hx-post="{% url 'ai_support:advice' %}"
+                        hx-vals='{"context_type":"student_hint"}'
+                        hx-target="#student-ai-advice"
+                        hx-swap="innerHTML"
+                        class="btn btn-secondary btn-sm"
+                    >
+                        Спросить ИИ
+                    </button>
+                </div>
+                <div id="student-ai-advice" class="mt-4"></div>
+            </section>
+
+            {% for block in lesson.blocks.all %}
+                <article class="surface-panel p-8 lesson-block {% if block.block_type == 'quote' %}lesson-block--quote{% endif %}" data-ui="lesson-block">
+                    <div class="flex flex-wrap items-center gap-2">
+                        {% include "partials/status_badge.html" with label=block.get_block_type_display tone="primary" %}
+                        {% if block.is_required %}
+                            {% include "partials/status_badge.html" with label="Обязательный блок" tone="success" %}
+                        {% endif %}
+                    </div>
+                    {% if block.title %}
+                        <h2 class="section-title mt-4">{{ block.title }}</h2>
+                    {% endif %}
+                    <div class="content-prose reading-width mt-4">
+                        {% if block.block_type == "text" or block.block_type == "quote" %}
+                            <div class="prose">{{ block.content_markdown|markdownify }}</div>
+                        {% elif block.block_type == "code" %}
+                            {% if block.code_language %}
+                                <p class="page-eyebrow">{{ block.code_language }}</p>
+                            {% endif %}
+                            <pre>{{ block.code_content }}</pre>
+                        {% elif block.block_type == "image" and block.image %}
+                            <img src="{{ block.image.url }}" alt="{{ block.title }}" class="max-w-full rounded-xl">
+                        {% elif block.block_type == "file" and block.file %}
+                            <a href="{{ block.file.url }}" class="btn btn-secondary btn-sm">{{ block.file|filename }}</a>
+                        {% elif block.block_type == "quiz" and block.quiz %}
+                            <div class="surface-muted p-5 quiz-panel" data-ui="quiz-panel">
+                                <p class="muted-text text-sm">{{ block.quiz.description|default:"Пройдите тест, чтобы завершить урок." }}</p>
+                                <div class="inline-actions mt-4">
+                                    <a href="{% url 'quizzes:take' block.quiz.pk %}" class="btn btn-primary">Открыть тест</a>
+                                    <span class="chip chip-warning">{{ block.quiz.effective_passing_score }} балл(ов) для прохождения</span>
+                                </div>
+                                <div class="stack-list mt-4">
+                                    {% for attempt in attempts_by_quiz|get_item:block.quiz.pk %}
+                                        <div class="surface-soft p-4 text-sm">
+                                            Попытка: {{ attempt.score }} / {{ block.quiz.max_score }} · {% if attempt.passed %}пройдено{% else %}не пройдено{% endif %}
+                                        </div>
+                                    {% empty %}
+                                        {% include "partials/empty_state.html" with description="История попыток появится после первой сдачи теста." %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+
+            <section class="surface-panel p-8">
+                {% include "partials/section_header.html" with title="Практические задания" description="Задания, подготовленные как основа для будущей песочницы." %}
+                <div class="stack-list">
+                    {% for task in practice_tasks %}
+                        <article class="surface-soft p-5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                {% include "partials/status_badge.html" with label=task.language tone="primary" %}
+                                {% include "partials/status_badge.html" with label="Будет доступно позже" tone="warning" %}
+                            </div>
+                            <h3 class="font-semibold mt-3">{{ task.title }}</h3>
+                            <div class="content-prose mt-3 reading-width">
+                                <div class="prose">{{ task.description_markdown|markdownify }}</div>
+                            </div>
+                        </article>
+                    {% empty %}
+                        {% include "partials/empty_state.html" with description="Для этого урока пока нет практических заданий." %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="surface-panel p-6">
+                <div class="inline-actions">
+                    {% if not quiz_blocks %}
+                        <form method="post" action="{% url 'learning:lesson_complete' course.slug lesson.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Отметить как завершенный</button>
+                        </form>
+                    {% endif %}
+                    {% if next_lesson %}
+                        <a href="{{ next_lesson.get_absolute_url }}" class="btn btn-secondary">Следующий урок</a>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}

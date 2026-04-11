@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Редактор теста{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{{ object.lesson_block.lesson.get_builder_url }}">Конструктор урока</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Редактор теста</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Тестовый блок" title=object.title description="Настройте название теста, пояснение и проходной балл. Вопросы редактируются в отдельной колонке." %}
+        <form method="post" class="form-stack">
+            {% csrf_token %}
+            {% include "partials/form_errors.html" %}
+            {% for field in form %}
+                {% include "partials/form_field.html" with field=field %}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Сохранить тест</button>
+        </form>
+    </div>
+
+    <div class="surface-panel p-8">
+        {% include "partials/section_header.html" with title="Вопросы теста" description="Редактируйте содержимое вопросов и варианты ответов. Правильные ответы используются только для автоматической проверки." %}
+        <div class="inline-actions mb-4">
+            <a href="{% url 'quizzes:question_create' object.pk %}" class="btn btn-primary btn-sm">Добавить вопрос</a>
+        </div>
+        <div class="stack-list">
+            {% for question in questions %}
+                <article class="surface-soft p-5">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                {% include "partials/status_badge.html" with label=question.get_question_type_display tone="primary" %}
+                                <span class="chip chip-warning">{{ question.score }} балл(ов)</span>
+                            </div>
+                            <h3 class="font-semibold mt-3">{{ question.text }}</h3>
+                        </div>
+                        <div class="secondary-actions">
+                            <a href="{% url 'quizzes:question_update' object.pk question.pk %}">Редактировать</a>
+                            <form method="post" action="{% url 'quizzes:question_delete' object.pk question.pk %}">
+                                {% csrf_token %}
+                                <button type="submit">Удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="stack-list mt-4">
+                        {% for option in question.options.all %}
+                            <div class="surface-panel p-4">
+                                <div class="flex items-center justify-between gap-4">
+                                    <span>{{ option.text }}</span>
+                                    {% if option.is_correct %}
+                                        {% include "partials/status_badge.html" with label="Правильный" tone="success" %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            {% include "partials/empty_state.html" with description="У вопроса пока нет вариантов ответа." %}
+                        {% endfor %}
+                    </div>
+                </article>
+            {% empty %}
+                {% include "partials/empty_state.html" with title="Пока нет вопросов" description="Добавьте первый вопрос, чтобы тест можно было проходить." %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

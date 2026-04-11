@@ -1,0 +1,55 @@
+<section class="surface-panel p-6 mt-5" data-ui="builder-question-form">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">{% if question %}Редактирование вопроса{% else %}Новый вопрос{% endif %}</h3>
+            <p class="section-description">Настройте формулировку, баллы и варианты ответов прямо внутри конструктора.</p>
+        </div>
+    </div>
+    <form
+        method="post"
+        action="{% if question %}{% url 'quizzes:question_update' quiz.pk question.pk %}{% else %}{% url 'quizzes:question_create' quiz.pk %}{% endif %}?builder_mode=1&edit_block={{ block.id }}"
+        hx-post="{% if question %}{% url 'quizzes:question_update' quiz.pk question.pk %}{% else %}{% url 'quizzes:question_create' quiz.pk %}{% endif %}?builder_mode=1&edit_block={{ block.id }}"
+        hx-target="#lesson-builder-shell"
+        hx-swap="outerHTML"
+        class="form-stack"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="builder_mode" value="1">
+        {% include "partials/form_errors.html" with form=form %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+
+        {{ formset.management_form }}
+        <section class="surface-muted p-5">
+            <h4 class="section-title">Варианты ответа</h4>
+            <div class="stack-list mt-4">
+                {% for option_form in formset %}
+                    <div class="surface-soft p-4">
+                        {% for hidden in option_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                        <div class="form-stack">
+                            {% for field in option_form.visible_fields %}
+                                {% include "partials/form_field.html" with field=field %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-primary">Сохранить вопрос</button>
+            <button
+                type="button"
+                class="btn btn-secondary"
+                hx-get="{{ quiz.lesson_block.lesson.get_builder_url }}?partial=shell&edit_block={{ block.id }}#block-editor-{{ block.id }}"
+                hx-target="#lesson-builder-shell"
+                hx-swap="outerHTML"
+            >
+                Отмена
+            </button>
+        </div>
+    </form>
+</section>

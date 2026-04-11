@@ -1,0 +1,58 @@
+{% load static core_extras %}
+{% with illustration=course|course_illustration is_owner=request.user|can_manage_course:course %}
+    <article class="course-card" data-ui="course-card">
+        <div class="course-card__cover">
+            <div class="course-card__cover-frame">
+                {% if course.cover_image %}
+                    <img src="{{ course.cover_image.url }}" alt="{{ course.title }}" class="course-card__cover-image">
+                {% else %}
+                    <img
+                        src="{% static illustration %}"
+                        alt="Иллюстрация курса «{{ course.title }}»"
+                        class="course-card__cover-image course-card__cover-image--contain"
+                    >
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="course-card__body">
+            <div class="course-card__meta">
+                <span class="chip chip-primary">{{ course.category.name }}</span>
+                <span class="chip">{{ course.get_level_display }}</span>
+                <span class="chip">{{ course.estimated_duration_minutes }} мин</span>
+            </div>
+
+            <div class="course-card__content">
+                <h3 class="course-card__title line-clamp-2">
+                    <a href="{% if is_owner and course.status == 'draft' %}{{ course.get_preview_url }}{% else %}{{ course.get_absolute_url }}{% endif %}">
+                        {{ course.title }}
+                    </a>
+                </h3>
+                <p class="course-card__description line-clamp-3">{{ course.short_description }}</p>
+            </div>
+
+            <div class="course-card__support">
+                <div class="course-card__author-row">
+                    <div>
+                        <p class="course-card__author-label">Автор</p>
+                        <p class="course-card__author-name">{{ course.author.get_display_name }}</p>
+                    </div>
+                    {% include "partials/rating_display.html" with rating=course.average_rating count=course.reviews_count %}
+                </div>
+                <p class="course-card__detail">{{ course.get_order_mode_display }}</p>
+            </div>
+
+            <div class="course-card__actions">
+                {% if is_owner %}
+                    <a href="{% if course.status == 'draft' %}{{ course.get_preview_url }}{% else %}{{ course.get_absolute_url }}{% endif %}" class="btn btn-primary btn-sm">
+                        {% if course.status == 'draft' %}Предпросмотр{% else %}Открыть курс{% endif %}
+                    </a>
+                    <a href="{% url 'courses:update' course.slug %}" class="btn btn-secondary btn-sm">Редактировать</a>
+                {% else %}
+                    <a href="{{ course.get_absolute_url }}" class="btn btn-primary btn-sm">Открыть курс</a>
+                    <a href="{% url 'courses:author_detail' course.author.username %}" class="btn btn-ghost btn-sm">Автор</a>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+{% endwith %}

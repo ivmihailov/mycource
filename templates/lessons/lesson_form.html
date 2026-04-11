@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}{% if lesson %}Редактирование урока{% else %}Новый урок{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'courses:update' course.slug %}">Курс</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>{% if lesson %}Редактирование урока{% else %}Создание урока{% endif %}</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel lesson-form-shell" data-ui="lesson-form">
+    {% if lesson %}
+        {% include "partials/page_header.html" with eyebrow="Урок курса" title=lesson.title description="Заполните основные данные урока. После сохранения откроется конструктор блоков." %}
+    {% else %}
+        {% include "partials/page_header.html" with eyebrow="Урок курса" title="Новый урок" description="Заполните основные данные урока. После сохранения откроется конструктор блоков." %}
+    {% endif %}
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-primary">Сохранить урок</button>
+            {% if lesson %}
+                <a href="{% url 'lessons:builder' lesson.course.slug lesson.slug %}" class="btn btn-secondary">К конструктору</a>
+            {% endif %}
+        </div>
+    </form>
+</section>
+{% endblock %}

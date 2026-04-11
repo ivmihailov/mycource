@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Автор {{ author_profile.username }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'courses:catalog' %}">Каталог</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>{{ author_profile.username }}</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Профиль автора" title=author_profile.get_display_name description=author_profile.bio|default:"Автор пока не заполнил описание." %}
+    </div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for course in courses %}
+            {% include "courses/partials/course_card.html" with course=course %}
+        {% empty %}
+            {% include "partials/empty_state.html" with title="Пока нет опубликованных курсов" description="У этого автора еще нет публичных материалов." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Ошибка 500" title="На сервере произошла ошибка" description="Попробуйте обновить страницу позже. Основные данные проекта не были потеряны." action_url="/" action_label="На главную" %}
+</section>
+{% endblock %}

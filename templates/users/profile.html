@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:dashboard' %}">Кабинет</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Профиль</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="grid gap-6 lg:grid-cols-[0.78fr_1.22fr]">
+    <aside class="surface-panel p-8">
+        <div class="flex items-center gap-4">
+            {% if object.avatar %}
+                <img src="{{ object.avatar.url }}" alt="{{ object.username }}" class="h-20 w-20 rounded-2xl object-cover">
+            {% else %}
+                <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-[rgba(var(--accent),0.12)] text-2xl font-semibold text-[rgb(var(--accent))]">
+                    {{ object.username|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h1 class="page-title text-[2rem]">{{ object.get_display_name }}</h1>
+                <p class="muted-text">@{{ object.username }}</p>
+            </div>
+        </div>
+
+        <div class="stack-list mt-6">
+            <div class="info-panel">
+                <p class="muted-text text-sm">Email</p>
+                <p class="font-semibold">{{ object.email }}</p>
+            </div>
+            <div class="info-panel">
+                <p class="muted-text text-sm">Статус email</p>
+                {% if object.is_email_verified %}
+                    {% include "partials/status_badge.html" with label="Подтвержден" tone="success" %}
+                {% else %}
+                    {% include "partials/status_badge.html" with label="Ожидает подтверждения" tone="warning" %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <a href="{% url 'users:profile_edit' %}" class="btn btn-primary">Редактировать профиль</a>
+        </div>
+    </aside>
+
+    <div class="surface-panel p-8">
+        {% include "partials/section_header.html" with title="О пользователе" description="Публичная и личная информация, которую вы указали в профиле." %}
+        <div class="surface-muted p-5">{{ object.bio|default:"Пока без описания." }}</div>
+    </div>
+</section>
+{% endblock %}

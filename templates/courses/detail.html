@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static core_extras %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:home' %}">Главная</a>
+        <span class="breadcrumbs__separator">/</span>
+        <a href="{% url 'courses:catalog' %}">Каталог</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>{{ course.title }}</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        <div class="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+            <div>
+                {% include "partials/page_header.html" with eyebrow=course.category.name title=course.title description=course.short_description %}
+                <div class="meta-row">
+                    <span><strong>Уровень:</strong> {{ course.get_level_display }}</span>
+                    <span><strong>Длительность:</strong> {{ course.estimated_duration_minutes }} мин</span>
+                    <span><strong>Порядок:</strong> {{ course.get_order_mode_display }}</span>
+                    <span><strong>Просмотры:</strong> {{ course.view_count }}</span>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    {% for tag in course.tags.all %}
+                        <span class="chip">{{ tag.name }}</span>
+                    {% empty %}
+                        <span class="chip">Без тегов</span>
+                    {% endfor %}
+                </div>
+                <div class="inline-actions mt-6">
+                    {% if request.user.is_authenticated and not preview_mode %}
+                        <a href="{% url 'learning:start_course' course.slug %}" class="btn btn-primary">
+                            {% if course_progress %}Продолжить обучение{% else %}Начать обучение{% endif %}
+                        </a>
+                        {% include "interactions/partials/favorite_button.html" with course=course is_favorite=is_favorite %}
+                    {% endif %}
+                    {% if can_edit %}
+                        <a href="{% url 'courses:update' course.slug %}" class="btn btn-secondary">Редактировать курс</a>
+                    {% endif %}
+                    {% if preview_mode %}
+                        {% include "partials/status_badge.html" with label="Предпросмотр автора" tone="warning" %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <aside class="surface-muted p-5 course-detail__sidebar">
+                <div class="course-card__cover-frame course-detail__cover">
+                    {% if course.cover_image %}
+                        <img src="{{ course.cover_image.url }}" alt="{{ course.title }}" class="course-card__cover-image">
+                    {% else %}
+                        <img
+                            src="{% static course|course_illustration %}"
+                            alt="Иллюстрация курса «{{ course.title }}»"
+                            class="course-card__cover-image course-card__cover-image--contain"
+                        >
+                    {% endif %}
+                </div>
+                <div class="mt-4 space-y-3">
+                    <div class="info-panel">
+                        <p class="muted-text text-sm">Автор</p>
+                        <a href="{% url 'courses:author_detail' course.author.username %}" class="font-semibold hover:text-[rgb(var(--accent))]">{{ course.author.get_display_name }}</a>
+                    </div>
+                    <div class="info-panel">
+                        <p class="muted-text text-sm">Рейтинг и отзывы</p>
+                        <div class="mt-1">{% include "partials/rating_display.html" with rating=course.average_rating count=course.reviews_count %}</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <div class="page-stack">
+            <section class="surface-panel p-8 content-prose reading-width">
+                {% include "partials/section_header.html" with title="Описание курса" description="Полный текст программы и учебной цели." %}
+                <div class="prose">{{ course.full_description|markdownify }}</div>
+            </section>
+
+            <section class="surface-panel p-8" data-ui="course-reviews">
+                {% include "partials/section_header.html" with title="Отзывы" description="Оценки и впечатления пользователей о курсе." %}
+                {% if request.user.is_authenticated and not preview_mode %}
+                    <form method="post" action="{% url 'interactions:upsert_review' course.slug %}" class="mt-4">
+                        {% csrf_token %}
+                        {% include "partials/form_errors.html" with form=review_form %}
+                        <div class="form-stack">
+                            {% for field in review_form %}
+                                {% include "partials/form_field.html" with field=field %}
+                            {% endfor %}
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Сохранить отзыв</button>
+                        </div>
+                    </form>
+                {% endif %}
+                <div class="stack-list mt-6">
+                    {% for review in reviews %}
+                        {% include "interactions/partials/review_item.html" with review=review %}
+                    {% empty %}
+                        {% include "partials/empty_state.html" with title="Пока нет отзывов" description="Первый отзыв поможет другим студентам понять, чего ожидать от курса." %}
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <aside class="page-stack">
+            <section class="surface-panel p-8" data-ui="course-program">
+                {% include "partials/section_header.html" with title="Программа курса" description="Список уроков в текущем порядке прохождения." %}
+                <div class="stack-list">
+                    {% for lesson in course.active_lessons %}
+                        <div class="list-row">
+                            <div>
+                                <p class="font-semibold">{{ lesson.position }}. {{ lesson.title }}</p>
+                                {% if lesson.short_description %}
+                                    <p class="muted-text text-sm mt-1">{{ lesson.short_description }}</p>
+                                {% endif %}
+                            </div>
+                            {% if request.user.is_authenticated and course.status == course.Status.PUBLISHED and not preview_mode %}
+                                <a href="{{ lesson.get_absolute_url }}" class="btn btn-secondary btn-sm">Открыть</a>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        {% include "partials/empty_state.html" with description="Автор еще не добавил уроки в этот курс." %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="surface-panel p-8" data-ui="course-comments">
+                {% include "partials/section_header.html" with title="Комментарии" description="Обсуждение курса и обратная связь по материалам." %}
+                {% include "interactions/partials/comment_section.html" %}
+            </section>
+        </aside>
+    </div>
+</section>
+{% endblock %}

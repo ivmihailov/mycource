@@ -1,0 +1,136 @@
+{% load core_extras %}
+
+<article id="block-editor-{{ card.block.id }}" class="surface-panel surface-elevated p-6 builder-block-card" data-ui="builder-block-card">
+    <div class="builder-block-card__summary">
+        <div class="builder-block-card__summary-main">
+            <div class="flex flex-wrap items-center gap-2">
+                {% include "partials/status_badge.html" with label=card.block.get_block_type_display tone="primary" %}
+                {% if card.block.is_required %}
+                    {% include "partials/status_badge.html" with label="Обязательный" tone="success" %}
+                {% endif %}
+                {% if card.block.block_type == "quiz" and card.quiz %}
+                    <span class="chip chip-warning">{{ card.quiz.questions.count }} вопрос(ов)</span>
+                {% endif %}
+            </div>
+            <h2 class="section-title mt-3">{{ card.block.title|default:"Без заголовка" }}</h2>
+            <p class="builder-block-card__summary-text">
+                {% if card.block.block_type == "quiz" and card.quiz %}
+                    {{ card.quiz.description|default:"Настройки теста и вопросы редактируются внутри блока."|truncatechars:140 }}
+                {% elif card.block.block_type == "code" and card.block.code_content %}
+                    {{ card.block.code_content|truncatechars:140 }}
+                {% elif card.block.block_type == "file" and card.block.file %}
+                    Файл: {{ card.block.file|filename }}
+                {% elif card.block.content_markdown %}
+                    {{ card.block.content_markdown|striptags|truncatechars:160 }}
+                {% else %}
+                    Откройте редактор, чтобы заполнить содержимое этого блока.
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="builder-block-card__summary-actions">
+            {% if active_block_id == card.block.id %}
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    hx-get="{{ lesson.get_builder_url }}?partial=shell#block-editor-{{ card.block.id }}"
+                    hx-target="#lesson-builder-shell"
+                    hx-swap="outerHTML"
+                >
+                    Закрыть
+                </button>
+            {% else %}
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    hx-get="{{ lesson.get_builder_url }}?partial=shell&edit_block={{ card.block.id }}#block-editor-{{ card.block.id }}"
+                    hx-target="#lesson-builder-shell"
+                    hx-swap="outerHTML"
+                >
+                    Редактировать
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if active_block_id == card.block.id %}
+        <div class="builder-block-card__body">
+            <div class="secondary-actions">
+                <form
+                    method="post"
+                    action="{% url 'lessons:block_duplicate' card.block.pk %}"
+                    hx-post="{% url 'lessons:block_duplicate' card.block.pk %}"
+                    hx-target="#lesson-builder-shell"
+                    hx-swap="outerHTML"
+                >
+                    {% csrf_token %}
+                    <button type="submit">Дублировать</button>
+                </form>
+                <form
+                    method="post"
+                    action="{% url 'lessons:block_delete' card.block.pk %}"
+                    hx-post="{% url 'lessons:block_delete' card.block.pk %}"
+                    hx-target="#lesson-builder-shell"
+                    hx-swap="outerHTML"
+                >
+                    {% csrf_token %}
+                    <button type="submit">Удалить</button>
+                </form>
+            </div>
+            <form
+                method="post"
+                enctype="multipart/form-data"
+                action="{% url 'lessons:block_update' card.block.pk %}"
+                hx-post="{% url 'lessons:block_update' card.block.pk %}"
+                hx-target="#lesson-builder-shell"
+                hx-swap="outerHTML"
+                hx-encoding="multipart/form-data"
+                class="form-stack"
+            >
+                {% csrf_token %}
+                <input type="hidden" name="builder_mode" value="1">
+                {% include "partials/form_errors.html" with form=card.form %}
+                {% include "lessons/partials/block_form_fields.html" with form=card.form current_block_type=card.block.block_type %}
+                <div class="inline-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Сохранить блок</button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        hx-get="{{ lesson.get_builder_url }}?partial=shell#block-editor-{{ card.block.id }}"
+                        hx-target="#lesson-builder-shell"
+                        hx-swap="outerHTML"
+                    >
+                        Отмена
+                    </button>
+                </div>
+            </form>
+
+            {% if card.block.block_type == "text" or card.block.block_type == "quote" %}
+                {% if card.block.content_markdown %}
+                    <details class="surface-soft p-5 mt-5">
+                        <summary class="font-semibold cursor-pointer">Предпросмотр Markdown</summary>
+                        <div class="content-prose reading-width mt-4">
+                            <div class="prose">{{ card.block.content_markdown|markdownify }}</div>
+                        </div>
+                    </details>
+                {% endif %}
+            {% elif card.block.block_type == "image" and card.block.image %}
+                <div class="surface-soft p-4 mt-5">
+                    <img src="{{ card.block.image.url }}" alt="{{ card.block.title }}" class="max-w-full rounded-xl border border-[rgb(var(--border))]">
+                </div>
+            {% elif card.block.block_type == "file" and card.block.file %}
+                <div class="surface-soft p-4 mt-5">
+                    <a href="{{ card.block.file.url }}" class="btn btn-secondary btn-sm">{{ card.block.file|filename }}</a>
+                </div>
+            {% elif card.block.block_type == "code" and card.block.code_content %}
+                <div class="content-prose mt-5">
+                    <pre>{{ card.block.code_content }}</pre>
+                </div>
+            {% endif %}
+
+            {% if card.quiz %}
+                {% include "lessons/partials/quiz_editor.html" with card=card %}
+            {% endif %}
+        </div>
+    {% endif %}
+</article>

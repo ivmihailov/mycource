@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Практическое задание{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Практическое задание" title="Заготовка под будущую песочницу" description="Сейчас задание служит архитектурным placeholder'ом и помогает показать направление развития проекта." %}
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Сохранить задание</button>
+    </form>
+</section>
+{% endblock %}

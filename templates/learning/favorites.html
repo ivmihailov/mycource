@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Избранное{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'learning:overview' %}">Мое обучение</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Избранное</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Раздел ученика" title="Избранные курсы" description="Подборка материалов, к которым вы хотите быстро возвращаться." %}
+    </div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for favorite in favorite_courses %}
+            {% include "courses/partials/course_card.html" with course=favorite.course %}
+        {% empty %}
+            {% include "partials/empty_state.html" with title="Избранное пусто" description="Сохраняйте интересные курсы через кнопку на странице курса." action_url="/courses/" action_label="Открыть каталог" image_path="images/illustrations/empty-courses.svg" %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

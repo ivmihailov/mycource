@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог курсов{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:home' %}">Главная</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Каталог</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Публичный каталог" title="Каталог курсов" description="Ищите подходящие программы по названию, категории, уровню сложности и рейтингу. Каталог показывает только опубликованные курсы." %}
+        <div class="filter-panel">
+            <form method="get" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-ui="catalog-filters">
+                {% for field in filter_form %}
+                    {% include "partials/form_field.html" with field=field %}
+                {% endfor %}
+                <div class="inline-actions md:col-span-2 xl:col-span-4">
+                    <button type="submit" class="btn btn-primary">Применить</button>
+                    <a href="{% url 'courses:catalog' %}" class="btn btn-secondary">Сбросить</a>
+                </div>
+            </form>
+            {% if page_obj %}
+                <p class="filter-panel__meta">Найдено курсов: {{ page_obj.paginator.count }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for course in courses %}
+            {% include "courses/partials/course_card.html" with course=course %}
+        {% empty %}
+            {% include "partials/empty_state.html" with title="Курсы не найдены" description="Попробуйте изменить фильтры или сбросить параметры поиска." image_path="images/illustrations/empty-search.svg" %}
+        {% endfor %}
+    </div>
+
+    {% include "partials/pagination.html" %}
+</section>
+{% endblock %}

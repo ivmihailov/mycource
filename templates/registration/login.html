@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Авторизация" title="Вход" description="Войдите, чтобы продолжить обучение, управлять курсами и получить доступ к личным разделам." %}
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-primary">Войти</button>
+            <a href="{% url 'users:password_reset' %}" class="btn btn-secondary">Забыли пароль?</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

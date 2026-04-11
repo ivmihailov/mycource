@@ -1,0 +1,155 @@
+{% load core_extras %}
+
+<section id="lesson-builder-shell" class="page-stack" data-ui="lesson-builder-shell">
+    <section class="surface-panel p-6 builder-toolbar">
+        <div class="builder-toolbar__header">
+            {% include "partials/page_header.html" with eyebrow="Конструктор урока" title=lesson.title description=lesson.short_description|default:"Редактируйте содержание урока и держите всю структуру в одном рабочем экране." %}
+            <div class="builder-toolbar__meta">
+                <span class="chip chip-primary">{{ course.title }}</span>
+                <span class="chip">{{ lesson.estimated_duration_minutes }} мин</span>
+                <span class="chip">{{ blocks|length }} блок(ов)</span>
+            </div>
+        </div>
+
+        <form
+            method="post"
+            action="{% url 'lessons:update' course.slug lesson.slug %}"
+            hx-post="{% url 'lessons:update' course.slug lesson.slug %}"
+            hx-target="#lesson-builder-shell"
+            hx-swap="outerHTML"
+            class="builder-lesson-form"
+        >
+            {% csrf_token %}
+            <input type="hidden" name="builder_mode" value="1">
+            {% include "partials/form_errors.html" with form=lesson_form %}
+            <div class="builder-lesson-form__grid">
+                {% include "partials/form_field.html" with field=lesson_form.title %}
+                {% include "partials/form_field.html" with field=lesson_form.estimated_duration_minutes %}
+                <div class="builder-lesson-form__description">
+                    {% include "partials/form_field.html" with field=lesson_form.short_description %}
+                </div>
+            </div>
+            <div class="inline-actions mt-4">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <button type="submit" name="return_to" value="course" class="btn btn-secondary">Сохранить и вернуться</button>
+                <a href="{{ lesson.get_absolute_url }}" class="btn btn-secondary">Preview</a>
+            </div>
+        </form>
+        <div class="inline-actions mt-4">
+            <form method="post" action="{% url 'lessons:duplicate' course.slug lesson.slug %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Дублировать</button></form>
+            <form method="post" action="{% url 'lessons:delete' course.slug lesson.slug %}">{% csrf_token %}<button type="submit" class="btn btn-danger">Скрыть</button></form>
+            <a href="{% url 'courses:update' course.slug %}" class="btn btn-ghost">К курсу</a>
+        </div>
+    </section>
+
+    <div class="builder-layout">
+        <aside class="surface-panel p-5 builder-outline" data-ui="builder-outline">
+            {% include "partials/section_header.html" with title="Структура урока" description="Порядок блоков, навигация по уроку и быстрые точки вставки." %}
+            <div class="inline-actions mb-4">
+                <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    hx-get="{{ lesson.get_builder_url }}?partial=shell&add_after=0"
+                    hx-target="#lesson-builder-shell"
+                    hx-swap="outerHTML"
+                >
+                    Добавить блок в начало
+                </button>
+            </div>
+            <div
+                class="stack-list"
+                data-sortable-url="{% url 'lessons:block_sort' course.slug lesson.slug %}"
+                data-sortable-refresh-url="{{ lesson.get_builder_url }}?partial=shell"
+                data-sortable-refresh-target="#lesson-builder-shell"
+                data-ui="builder-outline-list"
+            >
+                {% for card in block_cards %}
+                    <article class="list-row builder-outline__item" data-sortable-id="{{ card.block.id }}">
+                        <div class="flex items-start gap-3">
+                            <button type="button" data-drag-handle class="drag-handle" aria-label="Переместить блок">⋮⋮</button>
+                            <div class="min-w-0">
+                                <a
+                                    href="{{ lesson.get_builder_url }}?edit_block={{ card.block.id }}#block-editor-{{ card.block.id }}"
+                                    class="font-semibold hover:text-[rgb(var(--accent))]"
+                                    hx-get="{{ lesson.get_builder_url }}?partial=shell&edit_block={{ card.block.id }}#block-editor-{{ card.block.id }}"
+                                    hx-target="#lesson-builder-shell"
+                                    hx-swap="outerHTML"
+                                >
+                                    {{ card.block.position }}. {{ card.block.title|default:"Без заголовка" }}
+                                </a>
+                                <div class="mt-2 flex flex-wrap gap-2">
+                                    {% include "partials/status_badge.html" with label=card.block.get_block_type_display tone="primary" %}
+                                    {% if card.block.block_type == "quiz" and card.quiz %}
+                                        <span class="chip chip-warning">{{ card.quiz.questions.count }} вопрос(ов)</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% empty %}
+                    {% include "partials/empty_state.html" with title="Урок пока пустой" description="Добавьте первый блок, чтобы собрать структуру материала без лишних переходов." %}
+                {% endfor %}
+            </div>
+
+            <section class="surface-muted p-5 mt-5">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Совет ИИ</h2>
+                        <p class="section-description">Ненавязчивый mock-инструмент для структуры урока.</p>
+                    </div>
+                    <button
+                        type="button"
+                        hx-post="{% url 'ai_support:advice' %}"
+                        hx-vals='{"context_type":"lesson_help"}'
+                        hx-target="#ai-lesson-advice"
+                        hx-swap="innerHTML"
+                        class="btn btn-secondary btn-sm"
+                    >
+                        Получить совет
+                    </button>
+                </div>
+                <div id="ai-lesson-advice" class="mt-4">
+                    {% include "partials/empty_state.html" with description="Здесь появится mock-подсказка по структуре урока." %}
+                </div>
+            </section>
+        </aside>
+
+        <div class="page-stack builder-stage" data-ui="builder-stage">
+            <div class="stack-list" data-ui="builder-block-list">
+                {% include "lessons/partials/builder_add_slot.html" with slot_after_id=0 %}
+
+                {% for card in block_cards %}
+                    {% include "lessons/partials/block_editor_card.html" with card=card %}
+                    {% include "lessons/partials/builder_add_slot.html" with slot_after_id=card.block.id %}
+                {% empty %}
+                    {% if add_form %}
+                        {% include "lessons/partials/builder_add_slot.html" with slot_after_id=0 %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <section class="surface-panel p-6">
+                {% include "partials/section_header.html" with title="Практические задания" description="Задел под будущую песочницу. Пока это подготовленные placeholders без запуска кода." %}
+                <div class="stack-list">
+                    {% for task in practice_tasks %}
+                        <article class="surface-soft p-5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                {% include "partials/status_badge.html" with label=task.language tone="primary" %}
+                                {% include "partials/status_badge.html" with label="Заглушка" tone="warning" %}
+                            </div>
+                            <h3 class="font-semibold mt-3">{{ task.title }}</h3>
+                            <div class="content-prose mt-3 reading-width">
+                                <div class="prose">{{ task.description_markdown|markdownify }}</div>
+                            </div>
+                        </article>
+                    {% empty %}
+                        {% include "partials/empty_state.html" with description="Практические задания можно добавить позже как расширение урока." %}
+                    {% endfor %}
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'lessons:practice_create' course.slug lesson.slug %}" class="btn btn-secondary btn-sm">Добавить заготовку задания</a>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>

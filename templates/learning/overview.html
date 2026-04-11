@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Мое обучение{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:dashboard' %}">Кабинет</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Мое обучение</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Раздел ученика" title="Мое обучение" description="Следите за прогрессом, возвращайтесь к начатым курсам и храните подборку избранных материалов." %}
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+        <section class="surface-panel p-6">
+            {% include "partials/section_header.html" with title="В процессе" description="Курсы, к которым вы уже приступили." %}
+            <div class="stack-list">
+                {% for item in in_progress_courses %}
+                    <a href="{% url 'learning:start_course' item.course.slug %}" class="list-row">
+                        <div>
+                            <p class="font-semibold">{{ item.course.title }}</p>
+                            <p class="muted-text text-sm mt-1">Прогресс: {{ item.progress_percent }}%</p>
+                        </div>
+                        <span class="chip chip-primary">Продолжить</span>
+                    </a>
+                {% empty %}
+                    {% include "partials/empty_state.html" with title="Нет начатых курсов" description="Начните обучение в каталоге, чтобы прогресс появился здесь." action_url="/courses/" action_label="Перейти в каталог" image_path="images/illustrations/empty-learning.svg" %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="surface-panel p-6">
+            {% include "partials/section_header.html" with title="Завершено" description="Курсы, которые вы уже полностью прошли." %}
+            <div class="stack-list">
+                {% for item in completed_courses %}
+                    <div class="list-row">
+                        <div>
+                            <p class="font-semibold">{{ item.course.title }}</p>
+                            <p class="muted-text text-sm mt-1">Завершен: {{ item.completed_at|date:"d.m.Y" }}</p>
+                        </div>
+                        <span class="chip chip-success">Завершен</span>
+                    </div>
+                {% empty %}
+                    {% include "partials/empty_state.html" with title="Завершенных курсов пока нет" description="По мере прохождения курсов они будут переноситься в этот раздел." image_path="images/illustrations/empty-learning.svg" %}
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <section class="surface-panel p-6">
+        {% include "partials/section_header.html" with title="Избранное" description="Курсы, сохраненные для быстрого доступа." action_url="/learning/favorites/" action_label="Открыть все" %}
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {% for favorite in favorite_courses|slice:":3" %}
+                {% include "courses/partials/course_card.html" with course=favorite.course %}
+            {% empty %}
+                {% include "partials/empty_state.html" with description="Избранные курсы появятся после добавления из каталога или со страницы курса." image_path="images/illustrations/empty-courses.svg" %}
+            {% endfor %}
+        </div>
+    </section>
+</section>
+{% endblock %}

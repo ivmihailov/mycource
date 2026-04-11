@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Блок урока{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Редактор блока" title="Блок урока" description="Настройте содержимое блока в зависимости от его типа: текст, код, файл, изображение или тест." %}
+    <form method="post" enctype="multipart/form-data" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Сохранить блок</button>
+    </form>
+</section>
+{% endblock %}

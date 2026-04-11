@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Прохождение теста{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{{ quiz.lesson_block.lesson.get_absolute_url }}">Урок</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Тест</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="grid gap-6 xl:grid-cols-[1fr_0.7fr]">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Проверка знаний" title=quiz.title description=quiz.description|default:"Ответьте на вопросы и отправьте попытку на проверку." %}
+        <div class="inline-actions mb-6">
+            <span class="chip chip-warning">{{ quiz.effective_passing_score }} балл(ов) для прохождения</span>
+            <span class="chip chip-primary">Максимум: {{ quiz.max_score }}</span>
+        </div>
+        <form method="post" class="form-stack" data-ui="quiz-attempt-form">
+            {% csrf_token %}
+            {% include "partials/form_errors.html" %}
+            {% for field in form %}
+                <section class="surface-soft p-5 quiz-card" data-ui="quiz-card">
+                    <label class="field-label">{{ field.label }}</label>
+                    <p class="field-help">{{ field.help_text }}</p>
+                    <div class="mt-4">{{ field }}</div>
+                    {% if field.errors %}
+                        <div class="field-error">{{ field.errors }}</div>
+                    {% endif %}
+                </section>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Отправить тест</button>
+        </form>
+    </div>
+
+    <aside class="surface-panel p-6">
+        {% include "partials/section_header.html" with title="История попыток" description="Краткая история последних отправленных результатов." %}
+        <div class="stack-list">
+            {% for item in history %}
+                <div class="surface-soft p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="font-semibold">Баллы: {{ item.score }} / {{ item.quiz.max_score }}</p>
+                            <p class="muted-text text-sm mt-1">{{ item.submitted_at|date:"d.m.Y H:i" }}</p>
+                        </div>
+                        {% if item.passed %}
+                            {% include "partials/status_badge.html" with label="Пройден" tone="success" %}
+                        {% else %}
+                            {% include "partials/status_badge.html" with label="Не пройден" tone="warning" %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                {% include "partials/empty_state.html" with description="Это будет первая попытка прохождения теста." %}
+            {% endfor %}
+        </div>
+    </aside>
+</section>
+{% endblock %}

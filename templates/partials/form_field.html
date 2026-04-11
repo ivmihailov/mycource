@@ -1,0 +1,30 @@
+{% load core_extras %}
+{% with widget=field|widget_type %}
+    {% if widget == "CheckboxInput" %}
+        <div class="surface-soft p-4">
+            <label for="{{ field.id_for_label }}" class="flex items-start gap-3">
+                {{ field }}
+                <span>
+                    <span class="field-label mb-0">{{ field.label }}</span>
+                    {% if field.help_text %}
+                        <span class="field-help">{{ field.help_text }}</span>
+                    {% endif %}
+                </span>
+            </label>
+            {% if field.errors %}
+                <div class="field-error">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="form-field" data-ui="form-field">
+            <label for="{{ field.id_for_label }}" class="field-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+                <div class="field-help">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+                <div class="field-error">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endwith %}

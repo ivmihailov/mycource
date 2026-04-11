@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Вопрос теста{% endblock %}
+
+{% block content %}
+<section class="surface-panel p-8">
+    {% if question %}
+        {% include "partials/page_header.html" with eyebrow="Редактор вопроса" title=question.text description="Настройте тип вопроса, текст, баллы и варианты ответа. Для true/false также используются обычные варианты ответа." %}
+    {% else %}
+        {% include "partials/page_header.html" with eyebrow="Редактор вопроса" title="Новый вопрос" description="Настройте тип вопроса, текст, баллы и варианты ответа. Для true/false также используются обычные варианты ответа." %}
+    {% endif %}
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        {{ formset.management_form }}
+        <section class="surface-muted p-5">
+            <h2 class="section-title">Варианты ответа</h2>
+            <div class="stack-list mt-4">
+                {% for option_form in formset %}
+                    <div class="surface-panel p-5">
+                        {% for hidden in option_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                        <div class="form-stack">
+                            {% for field in option_form.visible_fields %}
+                                {% include "partials/form_field.html" with field=field %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-primary">Сохранить вопрос</button>
+            <a href="{% url 'quizzes:update' quiz.pk %}" class="btn btn-secondary">Назад к тесту</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

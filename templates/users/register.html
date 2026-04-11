@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Новый аккаунт" title="Регистрация" description="Создайте профиль, чтобы проходить курсы, оставлять отзывы и собирать собственные учебные материалы." %}
+    <form method="post" class="form-stack">
+        {% csrf_token %}
+        {% include "partials/form_errors.html" %}
+        {% for field in form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-primary">Создать аккаунт</button>
+            <a href="{% url 'users:login' %}" class="btn btn-secondary">У меня уже есть аккаунт</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

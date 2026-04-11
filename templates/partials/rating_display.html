@@ -1,0 +1,7 @@
+<span class="rating-inline" data-ui="rating-display">
+    <span class="rating-inline__score">{{ rating|default:"0.0" }}</span>
+    <span>/ 5</span>
+    {% if count is not None %}
+        <span>· {{ count }} отзыв(ов)</span>
+    {% endif %}
+</span>

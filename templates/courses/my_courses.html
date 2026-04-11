@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Мои курсы{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'core:dashboard' %}">Кабинет</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>Мои курсы</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Раздел автора" title="Мои курсы" description="Здесь собраны опубликованные и архивные курсы, которыми вы управляете." action_url="/courses/create/" action_label="Создать курс" %}
+    </div>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {% for course in courses %}
+            {% include "courses/partials/course_card.html" with course=course %}
+        {% empty %}
+            {% include "partials/empty_state.html" with title="У вас пока нет курсов" description="Создайте первый курс, чтобы собрать учебную программу и уроки." action_url="/courses/create/" action_label="Создать курс" image_path="images/illustrations/empty-courses.svg" %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

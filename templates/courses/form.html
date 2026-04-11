@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{% if course %}Редактирование курса{% else %}Создание курса{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'courses:my_courses' %}">Мои курсы</a>
+        <span class="breadcrumbs__separator">/</span>
+        <span>{% if course %}Редактирование{% else %}Создание курса{% endif %}</span>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<section class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+    <div class="surface-panel p-8">
+        {% if course %}
+            {% include "partials/page_header.html" with eyebrow="Конструктор курса" title=course.title description="Заполните основную информацию о курсе. Структуру уроков можно настроить в правом блоке после сохранения." %}
+        {% else %}
+            {% include "partials/page_header.html" with eyebrow="Конструктор курса" title="Новый курс" description="Заполните основную информацию о курсе. Структуру уроков можно настроить в правом блоке после сохранения." %}
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="form-stack" data-ui="course-form">
+            {% csrf_token %}
+            {% include "partials/form_errors.html" %}
+            {% for field in form %}
+                {% include "partials/form_field.html" with field=field %}
+            {% endfor %}
+            <div class="inline-actions">
+                <button type="submit" class="btn btn-primary">{% if course %}Сохранить курс{% else %}Создать курс{% endif %}</button>
+                {% if course %}
+                    <a href="{{ course.get_preview_url }}" class="btn btn-secondary">Предпросмотр</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <aside class="page-stack">
+        <section class="surface-panel p-6">
+            {% include "partials/section_header.html" with title="Статус и действия" description="Основные публикационные действия и быстрые переходы." %}
+            {% if course %}
+                <div class="flex flex-wrap gap-2">
+                    {% if course.status == course.Status.PUBLISHED %}
+                        {% include "partials/status_badge.html" with label="Опубликован" tone="success" %}
+                    {% elif course.status == course.Status.ARCHIVED %}
+                        {% include "partials/status_badge.html" with label="Архив" tone="warning" %}
+                    {% else %}
+                        {% include "partials/status_badge.html" with label="Черновик" tone="primary" %}
+                    {% endif %}
+                </div>
+                <div class="inline-actions mt-4">
+                    <form method="post" action="{% url 'courses:publish' course.slug %}">{% csrf_token %}<button type="submit" class="btn btn-success">Опубликовать</button></form>
+                    <form method="post" action="{% url 'courses:archive' course.slug %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Архивировать</button></form>
+                    <form method="post" action="{% url 'courses:duplicate' course.slug %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">Дублировать</button></form>
+                    <form method="post" action="{% url 'courses:delete' course.slug %}">{% csrf_token %}<button type="submit" class="btn btn-danger">Скрыть</button></form>
+                </div>
+            {% else %}
+                {% include "partials/empty_state.html" with description="После первого сохранения появятся действия публикации и структура уроков." %}
+            {% endif %}
+        </section>
+
+        <section class="surface-panel p-6">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Совет ИИ</h2>
+                    <p class="section-description">Вспомогательная mock-подсказка по структуре курса. Это вторичный инструмент, а не центральный сценарий.</p>
+                </div>
+                <button
+                    type="button"
+                    hx-post="{% url 'ai_support:advice' %}"
+                    hx-vals='{"context_type":"course_creation"}'
+                    hx-target="#ai-course-advice"
+                    hx-swap="innerHTML"
+                    class="btn btn-secondary btn-sm"
+                >
+                    Получить совет
+                </button>
+            </div>
+            <div id="ai-course-advice">
+                {% include "partials/empty_state.html" with description="Совет появится здесь после запроса." %}
+            </div>
+        </section>
+
+        {% if course %}
+            <section class="surface-panel p-6" data-ui="course-lessons-panel">
+                {% include "partials/section_header.html" with title="Структура курса" description="Уроки можно переставлять drag-and-drop. Основные действия вынесены рядом с каждым уроком." %}
+                <div class="inline-actions mb-4">
+                    <a href="{% url 'lessons:create' course.slug %}" class="btn btn-primary btn-sm">Добавить урок</a>
+                    <a href="{{ course.get_preview_url }}" class="btn btn-secondary btn-sm">Открыть preview</a>
+                </div>
+                {% csrf_token %}
+                <div class="stack-list" data-sortable-url="{% url 'lessons:sort' course.slug %}" data-ui="lesson-sort-list">
+                    {% for lesson in lessons %}
+                        <div class="list-row" data-sortable-id="{{ lesson.id }}">
+                            <div class="flex items-start gap-3">
+                                <button type="button" data-drag-handle class="drag-handle" aria-label="Переместить урок">⋮⋮</button>
+                                <div>
+                                    <p class="font-semibold">{{ lesson.position }}. {{ lesson.title }}</p>
+                                    <p class="muted-text text-sm mt-1">{{ lesson.short_description|default:"Без краткого описания." }}</p>
+                                </div>
+                            </div>
+                            <div class="secondary-actions">
+                                <a href="{% url 'lessons:update' course.slug lesson.slug %}">Редактировать</a>
+                                <a href="{% url 'lessons:builder' course.slug lesson.slug %}">Конструктор</a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        {% include "partials/empty_state.html" with title="Пока нет уроков" description="Добавьте первый урок, чтобы собрать программу курса." action_url="/lessons/course/" action_label="" %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    </aside>
+</section>
+{% endblock %}

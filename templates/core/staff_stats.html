@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+<section class="page-stack">
+    <div class="surface-panel p-8">
+        {% include "partials/page_header.html" with eyebrow="Staff-раздел" title="Статистика системы" description="Краткая сводка по основным сущностям платформы и текущему наполнению." %}
+        <div class="dashboard-grid mt-6">
+            {% for key, value in stats.items %}
+                <div class="stat-card">
+                    <p class="stat-card__label">{{ key }}</p>
+                    <p class="stat-card__value">{{ value }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

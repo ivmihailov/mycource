@@ -1,0 +1,15 @@
+<a
+    href="{{ item.get_absolute_url }}"
+    class="lesson-nav__item {% if item.pk == lesson.pk %}is-active{% elif item.pk not in accessible_ids %}is-locked{% endif %}"
+    data-ui="lesson-nav-item"
+>
+    <div class="lesson-nav__item-head">
+        <div class="font-semibold">{{ item.position }}. {{ item.title }}</div>
+        {% if item.pk in completed_ids %}
+            <span class="chip chip-success lesson-nav__status">Готово</span>
+        {% endif %}
+    </div>
+    {% if item.short_description %}
+        <div class="mt-1 text-sm">{{ item.short_description }}</div>
+    {% endif %}
+</a>

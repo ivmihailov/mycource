@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Результат теста{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Результат теста" title=quiz.title description="Результат попытки сохранен в истории. Правильные ответы после прохождения не показываются по условиям MVP." %}
+    <div class="stack-list">
+        <div class="surface-soft p-5">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="font-semibold">Баллы: {{ attempt.score }} / {{ quiz.max_score }}</p>
+                    <p class="muted-text text-sm mt-1">{{ attempt.submitted_at|date:"d.m.Y H:i" }}</p>
+                </div>
+                {% if attempt.passed %}
+                    {% include "partials/status_badge.html" with label="Тест пройден" tone="success" %}
+                {% else %}
+                    {% include "partials/status_badge.html" with label="Тест не пройден" tone="warning" %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="inline-actions">
+            <a href="{{ quiz.lesson_block.lesson.get_absolute_url }}" class="btn btn-primary">Вернуться к уроку</a>
+            <a href="{% url 'quizzes:take' quiz.pk %}" class="btn btn-secondary">Пройти еще раз</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

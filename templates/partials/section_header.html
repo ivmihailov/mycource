@@ -1,0 +1,11 @@
+<div class="section-header">
+    <div>
+        <h2 class="section-title">{{ title }}</h2>
+        {% if description %}
+            <p class="section-description">{{ description }}</p>
+        {% endif %}
+    </div>
+    {% if action_url and action_label %}
+        <a href="{{ action_url }}" class="btn {% if action_variant %}btn-{{ action_variant }}{% else %}btn-secondary{% endif %} btn-sm">{{ action_label }}</a>
+    {% endif %}
+</div>

@@ -1,0 +1,15 @@
+<article class="surface-soft p-5 feedback-card" data-ui="comment-item">
+    <div class="flex items-start justify-between gap-4">
+        <div>
+            <p class="font-semibold">{{ comment.author.username }}</p>
+            <p class="muted-text text-sm">{{ comment.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+        {% if request.user == comment.author or request.user == course.author or request.user.is_staff %}
+            <form method="post" action="{% url 'interactions:delete_comment' comment.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm">Скрыть</button>
+            </form>
+        {% endif %}
+    </div>
+    <p class="mt-4 whitespace-pre-line text-sm">{{ comment.body }}</p>
+</article>

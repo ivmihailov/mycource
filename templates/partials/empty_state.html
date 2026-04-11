@@ -1,0 +1,21 @@
+{% load static %}
+<div class="empty-state" data-ui="empty-state">
+    {% if image_path %}
+        <div class="empty-state__media">
+            <img
+                src="{% static image_path %}"
+                alt="{% if image_alt %}{{ image_alt }}{% elif title %}{{ title }}{% else %}Иллюстрация состояния{% endif %}"
+                class="empty-state__image"
+            >
+        </div>
+    {% endif %}
+    {% if title %}
+        <p class="font-semibold text-[rgb(var(--text))]">{{ title }}</p>
+    {% endif %}
+    {% if description %}
+        <p class="{% if title %}mt-2{% endif %}">{{ description }}</p>
+    {% endif %}
+    {% if action_url and action_label %}
+        <a href="{{ action_url }}" class="btn btn-secondary btn-sm mt-4">{{ action_label }}</a>
+    {% endif %}
+</div>

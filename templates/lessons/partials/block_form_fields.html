@@ -1,0 +1,34 @@
+<div class="builder-block-fields" data-block-type-form data-current-block-type="{{ current_block_type|default:form.block_type.value|default:'' }}">
+    {% if show_type_selector %}
+        {% include "partials/form_field.html" with field=form.block_type %}
+    {% endif %}
+
+    <div data-block-visible-for="text,image,code,file,quote,quiz">
+        {% include "partials/form_field.html" with field=form.title %}
+    </div>
+
+    <div data-block-visible-for="text,quote">
+        {% include "partials/form_field.html" with field=form.content_markdown %}
+    </div>
+
+    <div data-block-visible-for="image">
+        {% include "partials/form_field.html" with field=form.image %}
+    </div>
+
+    <div data-block-visible-for="file">
+        {% include "partials/form_field.html" with field=form.file %}
+    </div>
+
+    <div data-block-visible-for="code">
+        {% include "partials/form_field.html" with field=form.code_language %}
+        {% include "partials/form_field.html" with field=form.code_content %}
+    </div>
+
+    <div data-block-visible-for="quote">
+        {% include "partials/form_field.html" with field=form.note_style %}
+    </div>
+
+    <div data-block-visible-for="text,image,code,file,quote,quiz">
+        {% include "partials/form_field.html" with field=form.is_required %}
+    </div>
+</div>

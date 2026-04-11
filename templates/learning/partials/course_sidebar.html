@@ -1,0 +1,15 @@
+<div class="lesson-sidebar__content">
+    <div class="page-eyebrow mb-2">{{ course.title }}</div>
+    <h2 class="section-title text-lg">{{ lesson.title }}</h2>
+    {% if course_progress %}
+        <div class="info-panel mt-4">
+            <p class="muted-text text-sm">Прогресс курса</p>
+            <p class="font-semibold">{{ course_progress.progress_percent }}%</p>
+        </div>
+    {% endif %}
+    <nav class="lesson-nav mt-5">
+        {% for item in sidebar_lessons %}
+            {% include "learning/partials/lesson_nav_item.html" with item=item lesson=lesson accessible_ids=accessible_ids completed_ids=completed_ids %}
+        {% endfor %}
+    </nav>
+</div>

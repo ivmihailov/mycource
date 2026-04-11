@@ -1,0 +1,90 @@
+<section class="surface-muted p-5 mt-5 quiz-card" data-ui="builder-quiz-card">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Настройки теста</h3>
+            <p class="section-description">Редактирование параметров теста и вопросов без ухода с экрана урока.</p>
+        </div>
+        <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            hx-get="{% url 'quizzes:question_create' card.quiz.pk %}?builder_mode=1&edit_block={{ card.block.id }}"
+            hx-target="#lesson-builder-shell"
+            hx-swap="outerHTML"
+        >
+            Добавить вопрос
+        </button>
+    </div>
+
+    <form
+        method="post"
+        action="{% url 'quizzes:update' card.quiz.pk %}?builder_mode=1&edit_block={{ card.block.id }}"
+        hx-post="{% url 'quizzes:update' card.quiz.pk %}?builder_mode=1&edit_block={{ card.block.id }}"
+        hx-target="#lesson-builder-shell"
+        hx-swap="outerHTML"
+        class="form-stack"
+    >
+        {% csrf_token %}
+        <input type="hidden" name="builder_mode" value="1">
+        {% include "partials/form_errors.html" with form=card.quiz_form %}
+        {% for field in card.quiz_form %}
+            {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        <div class="inline-actions">
+            <button type="submit" class="btn btn-secondary btn-sm">Сохранить тест</button>
+        </div>
+    </form>
+
+    <div class="stack-list mt-5">
+        {% for question in card.quiz.questions.all %}
+            <article class="surface-soft p-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            {% include "partials/status_badge.html" with label=question.get_question_type_display tone="primary" %}
+                            <span class="chip chip-warning">{{ question.score }} балл(ов)</span>
+                        </div>
+                        <h4 class="font-semibold mt-3">{{ question.text }}</h4>
+                    </div>
+                    <div class="secondary-actions">
+                        <button
+                            type="button"
+                            hx-get="{% url 'quizzes:question_update' card.quiz.pk question.pk %}?builder_mode=1&edit_block={{ card.block.id }}"
+                            hx-target="#lesson-builder-shell"
+                            hx-swap="outerHTML"
+                        >
+                            Редактировать
+                        </button>
+                        <form
+                            method="post"
+                            action="{% url 'quizzes:question_delete' card.quiz.pk question.pk %}?builder_mode=1&edit_block={{ card.block.id }}"
+                            hx-post="{% url 'quizzes:question_delete' card.quiz.pk question.pk %}?builder_mode=1&edit_block={{ card.block.id }}"
+                            hx-target="#lesson-builder-shell"
+                            hx-swap="outerHTML"
+                        >
+                            {% csrf_token %}
+                            <button type="submit">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="stack-list mt-4">
+                    {% for option in question.options.all %}
+                        <div class="surface-panel p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <span>{{ option.text }}</span>
+                                {% if option.is_correct %}
+                                    {% include "partials/status_badge.html" with label="Правильный" tone="success" %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+        {% empty %}
+            {% include "partials/empty_state.html" with description="Добавьте первый вопрос, чтобы тест можно было пройти внутри урока." %}
+        {% endfor %}
+    </div>
+
+    {% if card.question_state %}
+        {% include "quizzes/partials/question_inline_form.html" with quiz=card.quiz form=card.question_state.form formset=card.question_state.formset question=card.question_state.question block=card.block %}
+    {% endif %}
+</section>

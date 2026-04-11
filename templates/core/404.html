@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Страница не найдена{% endblock %}
+
+{% block content %}
+<section class="surface-panel auth-panel">
+    {% include "partials/page_header.html" with eyebrow="Ошибка 404" title="Страница не найдена" description="Проверьте адрес страницы или вернитесь к основным разделам платформы." action_url="/" action_label="На главную" %}
+</section>
+{% endblock %}
