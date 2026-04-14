@@ -1,0 +1,38 @@
+<div id="ai-drawer-root" class="ai-drawer" data-ui="ai-drawer" hidden aria-hidden="true">
+    <button
+        type="button"
+        class="ai-drawer__backdrop"
+        data-ai-drawer-close
+        aria-label="Закрыть панель помощника"
+        onclick="if (window.MyCourseUI) { window.MyCourseUI.closeAiDrawer(); }"
+    ></button>
+    <aside class="ai-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="ai-drawer-title" tabindex="-1">
+        <div class="ai-drawer__header">
+            <div>
+                <p class="page-eyebrow">AI-помощник</p>
+                <h2 id="ai-drawer-title" class="section-title">Помощник по курсу</h2>
+                <p class="section-description">Задавайте вопросы по материалам курса, не отвлекаясь от чтения.</p>
+            </div>
+            <button
+                type="button"
+                class="btn btn-ghost btn-sm btn-icon"
+                data-ai-drawer-close
+                aria-label="Закрыть панель"
+                onclick="if (window.MyCourseUI) { window.MyCourseUI.closeAiDrawer(); }"
+            >
+                &times;
+            </button>
+        </div>
+        <div
+            id="ai-drawer-content"
+            class="ai-drawer__content"
+            data-ui="ai-drawer-content"
+            aria-live="polite"
+        >
+            <div class="empty-state">
+                <p class="font-semibold">Помощник откроется здесь</p>
+                <p class="mt-2">Нажмите «Спросить у ИИ» на странице курса или урока, и мы подгрузим панель справа.</p>
+            </div>
+        </div>
+    </aside>
+</div>

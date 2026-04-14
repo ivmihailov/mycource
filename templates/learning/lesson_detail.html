@@ -31,26 +31,30 @@
         <div class="page-stack" data-ui="lesson-content">
             <section class="surface-panel p-8">
                 {% include "partials/page_header.html" with eyebrow="Урок" title=lesson.title description=lesson.short_description %}
-                <div class="inline-actions mt-4">
-                    {% if lesson_progress and lesson_progress.status == lesson_progress.Status.COMPLETED %}
-                        {% include "partials/status_badge.html" with label="Урок завершен" tone="success" %}
-                    {% elif quiz_blocks %}
-                        {% include "partials/status_badge.html" with label="Требуется успешный тест" tone="warning" %}
-                    {% else %}
-                        {% include "partials/status_badge.html" with label="Можно завершить вручную" tone="primary" %}
-                    {% endif %}
+                <div class="lesson-hero-actions mt-4">
+                    <div class="inline-actions">
+                        {% if lesson_progress and lesson_progress.status == lesson_progress.Status.COMPLETED %}
+                            {% include "partials/status_badge.html" with label="Урок завершен" tone="success" %}
+                        {% elif quiz_blocks %}
+                            {% include "partials/status_badge.html" with label="Требуется успешный тест" tone="warning" %}
+                        {% else %}
+                            {% include "partials/status_badge.html" with label="Можно завершить вручную" tone="primary" %}
+                        {% endif %}
+                    </div>
                     <button
                         type="button"
-                        hx-post="{% url 'ai_support:advice' %}"
-                        hx-vals='{"context_type":"student_hint"}'
-                        hx-target="#student-ai-advice"
+                        class="btn btn-ghost btn-sm"
+                        data-ai-drawer-open
+                        data-ai-drawer-url="{% url 'ai_support:lesson_panel' course.slug lesson.slug %}"
+                        data-ai-drawer-title="Помощник по уроку"
+                        hx-get="{% url 'ai_support:lesson_panel' course.slug lesson.slug %}"
+                        hx-target="#ai-drawer-content"
                         hx-swap="innerHTML"
-                        class="btn btn-secondary btn-sm"
+                        onclick="if (window.MyCourseUI) { window.MyCourseUI.openAiDrawer(this); }"
                     >
-                        Спросить ИИ
+                        Спросить у ИИ
                     </button>
                 </div>
-                <div id="student-ai-advice" class="mt-4"></div>
             </section>
 
             {% for block in lesson.blocks.all %}

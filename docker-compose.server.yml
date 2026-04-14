@@ -1,0 +1,8 @@
+services:
+  web:
+    ports:
+      - "80:8000"
+    environment:
+      DJANGO_ALLOWED_HOSTS: 111.88.244.122,127.0.0.1,localhost
+      SITE_DOMAIN: 111.88.244.122
+      OPENROUTER_HTTP_REFERER: http://111.88.244.122

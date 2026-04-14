@@ -61,6 +61,9 @@ class QuizUpdateView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         self.object = form.save()
+        if self.object.is_ai_draft:
+            self.object.is_ai_draft = False
+            self.object.save(update_fields=["is_ai_draft", "updated_at"])
         messages.success(self.request, "Настройки теста сохранены.")
         if is_builder_request(self.request):
             return render_lesson_builder(
@@ -123,6 +126,9 @@ class QuizQuestionManageView(LoginRequiredMixin, View):
             question.save()
             formset.instance = question
             formset.save()
+            if self.quiz.is_ai_draft:
+                self.quiz.is_ai_draft = False
+                self.quiz.save(update_fields=["is_ai_draft", "updated_at"])
             self.quiz.update_max_score()
             messages.success(request, "Вопрос сохранен.")
             if is_builder_request(request):

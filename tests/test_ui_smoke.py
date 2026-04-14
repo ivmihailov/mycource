@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+from email.header import decode_header
 
 import pytest
 from django.core.management import call_command
@@ -6,6 +8,16 @@ from django.urls import reverse
 
 from apps.courses.models import Category, Course
 from apps.lessons.models import LessonBlock
+
+
+def decode_header_value(value):
+    decoded_parts = []
+    for chunk, encoding in decode_header(value):
+        if isinstance(chunk, bytes):
+            decoded_parts.append(chunk.decode(encoding or "utf-8"))
+        else:
+            decoded_parts.append(chunk)
+    return "".join(decoded_parts)
 
 
 @pytest.mark.django_db
@@ -20,6 +32,7 @@ def test_public_ui_pages_render_key_sections(client, published_course, course_wi
     assert "data-theme-toggle" in home_html
     assert "home-learning.svg" in home_html
     assert "surface-panel" in home_html
+    assert 'data-ui="toast-container"' in home_html
 
     assert catalog.status_code == 200
     catalog_html = catalog.content.decode()
@@ -34,6 +47,8 @@ def test_public_ui_pages_render_key_sections(client, published_course, course_wi
     assert 'data-ui="course-comments"' in html
     assert 'data-ui="course-reviews"' in html
     assert "surface-panel" in html
+    assert 'data-ui="ai-drawer"' in html
+    assert "ai-qna-panel-container" not in html
 
 
 @pytest.mark.django_db
@@ -112,6 +127,8 @@ def test_author_course_editor_and_builder_pages_render(client, author, course_wi
     assert 'data-ui="builder-block-list"' in builder_html
     assert 'data-ui="builder-block-card"' in builder_html
     assert "surface-elevated" in builder_html
+    assert "action-menu" in builder_html
+    assert "Тест генерируется, подождите..." in builder_html
     assert my_courses.status_code == 200
     assert drafts.status_code == 200
 
@@ -136,6 +153,10 @@ def test_lesson_and_quiz_ui_render_for_student(client, user, course_with_lessons
     assert 'data-ui="lesson-sidebar"' in lesson_html
     assert 'data-ui="lesson-nav-item"' in lesson_html
     assert "surface-panel" in lesson_html
+    assert 'data-ui="ai-drawer"' in lesson_html
+    assert "data-ai-drawer-open" in lesson_html
+    assert 'hx-target="#ai-drawer-content"' in lesson_html
+    assert "ai-qna-panel-container" not in lesson_html
 
     assert second_lesson.status_code == 200
     second_lesson_html = second_lesson.content.decode()
@@ -149,6 +170,57 @@ def test_lesson_and_quiz_ui_render_for_student(client, user, course_with_lessons
     assert 'data-ui="quiz-attempt-form"' in quiz_html
     assert 'data-ui="quiz-card"' in quiz_html
     assert "field-label" in quiz_html
+
+
+@pytest.mark.django_db
+def test_toasts_and_htmx_messages_do_not_render_inline(client, author, course_with_lessons):
+    course = course_with_lessons["course"]
+    lesson = course_with_lessons["lesson1"]
+    client.force_login(author)
+
+    builder_response = client.post(
+        reverse("lessons:update", kwargs={"course_slug": course.slug, "slug": lesson.slug}),
+        {
+            "builder_mode": "1",
+            "lesson-title": "Обновленный урок для toast-проверки",
+            "lesson-short_description": "Короткое описание для builder-сохранения.",
+            "lesson-estimated_duration_minutes": 25,
+        },
+        HTTP_HX_REQUEST="true",
+    )
+
+    home = client.get(reverse("core:home"))
+
+    assert builder_response.status_code == 200
+    assert "ui:toast" in decode_header_value(builder_response.headers["HX-Trigger"])
+    home_html = home.content.decode()
+    assert 'data-ui="toast-container"' in home_html
+    assert 'data-ui="flash-messages"' not in home_html
+
+    course_create_response = client.post(
+        reverse("courses:create"),
+        {
+            "title": "Toast Regression Course",
+            "short_description": "Курс для проверки серверного toast-markup.",
+            "full_description": "Полное описание курса для проверки toast-разметки после redirect.",
+            "category": course.category_id,
+            "tags": [],
+            "level": "beginner",
+            "estimated_duration_minutes": 30,
+            "order_mode": "sequential_order",
+        },
+        follow=True,
+    )
+    redirect_html = course_create_response.content.decode()
+    assert 'data-toast-close' in redirect_html
+    assert 'data-timeout="4800"' in redirect_html
+
+
+def test_toast_javascript_contains_duplicate_guard():
+    js = Path("static/js/main.js").read_text(encoding="utf-8")
+
+    assert "data-toast-key" in js
+    assert "CSS.escape(toastKey)" in js
 
 
 @pytest.mark.django_db

@@ -16,6 +16,7 @@ class Quiz(SoftDeleteModel):
     description = models.TextField(_("Описание"), blank=True)
     passing_score = models.PositiveIntegerField(_("Проходной балл"), null=True, blank=True)
     max_score = models.PositiveIntegerField(_("Максимальный балл"), default=0)
+    is_ai_draft = models.BooleanField(_("AI-черновик"), default=False)
 
     class Meta:
         verbose_name = _("Тест")

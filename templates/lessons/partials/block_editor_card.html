@@ -10,6 +10,9 @@
                 {% endif %}
                 {% if card.block.block_type == "quiz" and card.quiz %}
                     <span class="chip chip-warning">{{ card.quiz.questions.count }} вопрос(ов)</span>
+                    {% if card.quiz.is_ai_draft %}
+                        <span class="chip">AI-черновик</span>
+                    {% endif %}
                 {% endif %}
             </div>
             <h2 class="section-title mt-3">{{ card.block.title|default:"Без заголовка" }}</h2>
@@ -29,54 +32,60 @@
         </div>
 
         <div class="builder-block-card__summary-actions">
-            {% if active_block_id == card.block.id %}
-                <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    hx-get="{{ lesson.get_builder_url }}?partial=shell#block-editor-{{ card.block.id }}"
-                    hx-target="#lesson-builder-shell"
-                    hx-swap="outerHTML"
-                >
-                    Закрыть
-                </button>
-            {% else %}
-                <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    hx-get="{{ lesson.get_builder_url }}?partial=shell&edit_block={{ card.block.id }}#block-editor-{{ card.block.id }}"
-                    hx-target="#lesson-builder-shell"
-                    hx-swap="outerHTML"
-                >
-                    Редактировать
-                </button>
-            {% endif %}
+            <div class="inline-actions builder-card-actions">
+                {% if active_block_id == card.block.id %}
+                    <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        hx-get="{{ lesson.get_builder_url }}?partial=shell#block-editor-{{ card.block.id }}"
+                        hx-target="#lesson-builder-shell"
+                        hx-swap="outerHTML"
+                    >
+                        Закрыть
+                    </button>
+                {% else %}
+                    <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        hx-get="{{ lesson.get_builder_url }}?partial=shell&edit_block={{ card.block.id }}#block-editor-{{ card.block.id }}"
+                        hx-target="#lesson-builder-shell"
+                        hx-swap="outerHTML"
+                    >
+                        Редактировать
+                    </button>
+                {% endif %}
+
+                <details class="action-menu action-menu--compact">
+                    <summary class="btn btn-ghost btn-sm">Еще</summary>
+                    <div class="action-menu__panel">
+                        <form
+                            method="post"
+                            action="{% url 'lessons:block_duplicate' card.block.pk %}"
+                            hx-post="{% url 'lessons:block_duplicate' card.block.pk %}"
+                            hx-target="#lesson-builder-shell"
+                            hx-swap="outerHTML"
+                        >
+                            {% csrf_token %}
+                            <button type="submit" class="action-menu__link">Дублировать</button>
+                        </form>
+                        <form
+                            method="post"
+                            action="{% url 'lessons:block_delete' card.block.pk %}"
+                            hx-post="{% url 'lessons:block_delete' card.block.pk %}"
+                            hx-target="#lesson-builder-shell"
+                            hx-swap="outerHTML"
+                        >
+                            {% csrf_token %}
+                            <button type="submit" class="action-menu__link action-menu__link--danger">Удалить</button>
+                        </form>
+                    </div>
+                </details>
+            </div>
         </div>
     </div>
 
     {% if active_block_id == card.block.id %}
         <div class="builder-block-card__body">
-            <div class="secondary-actions">
-                <form
-                    method="post"
-                    action="{% url 'lessons:block_duplicate' card.block.pk %}"
-                    hx-post="{% url 'lessons:block_duplicate' card.block.pk %}"
-                    hx-target="#lesson-builder-shell"
-                    hx-swap="outerHTML"
-                >
-                    {% csrf_token %}
-                    <button type="submit">Дублировать</button>
-                </form>
-                <form
-                    method="post"
-                    action="{% url 'lessons:block_delete' card.block.pk %}"
-                    hx-post="{% url 'lessons:block_delete' card.block.pk %}"
-                    hx-target="#lesson-builder-shell"
-                    hx-swap="outerHTML"
-                >
-                    {% csrf_token %}
-                    <button type="submit">Удалить</button>
-                </form>
-            </div>
             <form
                 method="post"
                 enctype="multipart/form-data"

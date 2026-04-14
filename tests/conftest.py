@@ -8,6 +8,11 @@ from apps.quizzes.models import Quiz, QuizOption, QuizQuestion
 User = get_user_model()
 
 
+@pytest.fixture(autouse=True)
+def disable_ai_auto_refresh(settings):
+    settings.AI_AUTO_REFRESH_MODELS = False
+
+
 @pytest.fixture
 def user(db):
     return User.objects.create_user(

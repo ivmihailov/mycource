@@ -127,7 +127,7 @@ class LessonBuilderView(AuthorLessonMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        add_after_id = parse_int_or_none(self.request.GET.get("add_after"), default=0)
+        add_after_id = parse_int_or_none(self.request.GET.get("add_after"))
         active_block_id = parse_int_or_none(self.request.GET.get("edit_block"))
 
         context.update(

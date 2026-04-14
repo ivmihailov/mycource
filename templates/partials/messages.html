@@ -1,9 +1,30 @@
 {% if messages %}
-    <div class="page-stack" data-ui="flash-messages">
+    <div id="toast-container" class="toast-stack" data-ui="toast-container" aria-live="polite" aria-atomic="false">
         {% for message in messages %}
-            <div class="alert {{ message.tags }}" role="status">
-                <div>{{ message }}</div>
-            </div>
+            <article
+                class="toast {{ message.tags|default:'alert-info' }}"
+                data-toast
+                data-timeout="4800"
+                tabindex="0"
+            >
+                <div class="toast__body">
+                    <p class="toast__title">
+                        {% if "alert-success" in message.tags %}
+                            Готово
+                        {% elif "alert-danger" in message.tags %}
+                            Ошибка
+                        {% elif "alert-warning" in message.tags %}
+                            Внимание
+                        {% else %}
+                            Уведомление
+                        {% endif %}
+                    </p>
+                    <p class="toast__text">{{ message }}</p>
+                </div>
+                <button type="button" class="toast__close" data-toast-close aria-label="Закрыть уведомление">&times;</button>
+            </article>
         {% endfor %}
     </div>
+{% else %}
+    <div id="toast-container" class="toast-stack" data-ui="toast-container" aria-live="polite" aria-atomic="false"></div>
 {% endif %}

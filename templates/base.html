@@ -45,10 +45,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260414-toast-dedupe">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="app-body">
+    {% include "partials/messages.html" %}
+    {% include "ai_support/partials/ai_drawer.html" %}
     <div class="site-shell">
         <header class="site-header">
             <div class="app-container">
@@ -72,6 +74,7 @@
                         </nav>
                     </div>
                     <div class="header-actions">
+                        {% include "ai_support/partials/model_switcher.html" %}
                         <button type="button" class="btn btn-ghost btn-icon" data-theme-toggle aria-label="Переключить тему">
                             <span data-theme-icon>◐</span>
                         </button>
@@ -91,6 +94,9 @@
                 <details class="mobile-nav">
                     <summary class="btn btn-secondary btn-sm">Меню</summary>
                     <div class="mobile-nav__panel">
+                        <div class="mobile-nav__ai">
+                            {% include "ai_support/partials/model_switcher.html" %}
+                        </div>
                         <nav class="mobile-nav__links" aria-label="Мобильная навигация">
                             <a href="{% url 'courses:catalog' %}" class="mobile-nav__link">Каталог</a>
                             {% if request.user.is_authenticated %}
@@ -109,7 +115,6 @@
 
         <main class="app-container app-main">
             {% block breadcrumbs %}{% endblock %}
-            {% include "partials/messages.html" %}
             {% block content %}{% endblock %}
         </main>
 
@@ -131,7 +136,7 @@
 
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/main.js' %}?v=20260414-toast-dedupe"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

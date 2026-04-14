@@ -1,0 +1,27 @@
+<div id="ai-model-switcher" class="ai-model-switcher">
+    <form
+        method="post"
+        action="{% url 'ai_support:select_model' %}"
+        hx-post="{% url 'ai_support:select_model' %}"
+        hx-target="#ai-model-switcher"
+        hx-swap="outerHTML"
+        class="ai-model-switcher__form"
+    >
+        {% csrf_token %}
+        <label for="id-ai-role-type" class="ai-model-switcher__label">Модель ИИ</label>
+        <select id="id-ai-role-type" name="role_type" class="form-control form-control--compact" onchange="this.form.requestSubmit()">
+            {% for option in ai_model_options %}
+                <option value="{{ option.role_type }}" {% if ai_selected_role == option.role_type %}selected{% endif %}>{{ option.get_role_type_display }}</option>
+            {% empty %}
+                <option value="balanced">Сбалансированная</option>
+            {% endfor %}
+        </select>
+        {% if ai_selected_model %}
+            <p class="ai-model-switcher__meta">{{ ai_selected_model.display_name }} · <span class="muted-text">{{ ai_selected_model.external_model_id }}</span></p>
+        {% elif ai_enabled %}
+            <p class="ai-model-switcher__meta">Каталог моделей будет обновлен при первом обращении к OpenRouter.</p>
+        {% else %}
+            <p class="ai-model-switcher__meta">AI временно недоступен.</p>
+        {% endif %}
+    </form>
+</div>

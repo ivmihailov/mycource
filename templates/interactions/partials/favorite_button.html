@@ -1,7 +1,7 @@
 <div id="favorite-toggle">
     <form hx-post="{% url 'interactions:toggle_favorite' course.slug %}" hx-target="#favorite-toggle" hx-swap="outerHTML" method="post">
         {% csrf_token %}
-        <button type="submit" class="btn {% if is_favorite %}btn-secondary{% else %}btn-secondary{% endif %}">
+        <button type="submit" class="btn btn-secondary btn-sm">
             {% if is_favorite %}В избранном{% else %}В избранное{% endif %}
         </button>
     </form>

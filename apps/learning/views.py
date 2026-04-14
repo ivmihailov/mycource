@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
+from apps.ai_support.forms import AIQuestionForm
 from apps.courses.models import Course
 from apps.interactions.models import FavoriteCourse
 from apps.learning.models import CourseProgress, LessonProgress
@@ -122,6 +123,7 @@ class LessonDetailView(LoginRequiredMixin, TemplateView):
                 "attempts_by_quiz": attempts_by_quiz,
                 "next_lesson": get_next_lesson(self.course, self.lesson),
                 "practice_tasks": self.lesson.practice_tasks.filter(is_active=True),
+                "ai_question_form": AIQuestionForm(),
             }
         )
         return context

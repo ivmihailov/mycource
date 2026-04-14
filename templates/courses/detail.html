@@ -38,9 +38,19 @@
                             {% if course_progress %}Продолжить обучение{% else %}Начать обучение{% endif %}
                         </a>
                         {% include "interactions/partials/favorite_button.html" with course=course is_favorite=is_favorite %}
-                    {% endif %}
-                    {% if can_edit %}
-                        <a href="{% url 'courses:update' course.slug %}" class="btn btn-secondary">Редактировать курс</a>
+                        <button
+                            type="button"
+                            class="btn btn-ghost"
+                            data-ai-drawer-open
+                            data-ai-drawer-url="{% url 'ai_support:course_panel' course.slug %}"
+                            data-ai-drawer-title="Помощник по курсу"
+                            hx-get="{% url 'ai_support:course_panel' course.slug %}"
+                            hx-target="#ai-drawer-content"
+                            hx-swap="innerHTML"
+                            onclick="if (window.MyCourseUI) { window.MyCourseUI.openAiDrawer(this); }"
+                        >
+                            Спросить у ИИ
+                        </button>
                     {% endif %}
                     {% if preview_mode %}
                         {% include "partials/status_badge.html" with label="Предпросмотр автора" tone="warning" %}
@@ -69,6 +79,14 @@
                         <p class="muted-text text-sm">Рейтинг и отзывы</p>
                         <div class="mt-1">{% include "partials/rating_display.html" with rating=course.average_rating count=course.reviews_count %}</div>
                     </div>
+                    {% if can_edit %}
+                        <div class="info-panel">
+                            <p class="muted-text text-sm">Управление курсом</p>
+                            <div class="inline-actions mt-3">
+                                <a href="{% url 'courses:update' course.slug %}" class="btn btn-secondary btn-sm">Редактировать</a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </aside>
         </div>

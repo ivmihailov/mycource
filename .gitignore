@@ -10,3 +10,5 @@ staticfiles/
 media/
 .env
 node_modules/
+deploy_key.pem
+deploy_bundle.tar.gz

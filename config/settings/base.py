@@ -57,6 +57,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "apps.core.middleware.HtmxToastMessagesMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]
@@ -138,7 +139,18 @@ IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"]
 DOCUMENT_EXTENSIONS = ["pdf"]
 
 AI_ENABLED = env_bool("AI_ENABLED", True)
-AI_PROVIDER = env("AI_PROVIDER", "mock")
+AI_PROVIDER = env("AI_PROVIDER", "openrouter")
+OPENROUTER_API_KEY = env("OPENROUTER_API_KEY", "")
+OPENROUTER_BASE_URL = env("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_HTTP_REFERER = env("OPENROUTER_HTTP_REFERER", "")
+OPENROUTER_APP_TITLE = env("OPENROUTER_APP_TITLE", SITE_NAME)
+OPENROUTER_MODEL_FAST = env("OPENROUTER_MODEL_FAST", "")
+OPENROUTER_MODEL_BALANCED = env("OPENROUTER_MODEL_BALANCED", "")
+OPENROUTER_MODEL_STRONG = env("OPENROUTER_MODEL_STRONG", "")
+AI_MIN_CONTEXT_WINDOW = int(env("AI_MIN_CONTEXT_WINDOW", 16384))
+AI_MODEL_CACHE_SECONDS = int(env("AI_MODEL_CACHE_SECONDS", 21600))
+AI_REQUEST_TIMEOUT_SECONDS = int(env("AI_REQUEST_TIMEOUT_SECONDS", 35))
+AI_AUTO_REFRESH_MODELS = env_bool("AI_AUTO_REFRESH_MODELS", True)
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

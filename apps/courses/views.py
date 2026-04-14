@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
+from apps.ai_support.forms import AIQuestionForm
 from apps.core.mixins import OwnerOrStaffRequiredMixin
 from apps.courses.forms import CourseFilterForm, CourseForm
 from apps.courses.models import Category, Course
@@ -76,6 +77,7 @@ class CourseDetailView(DetailView):
         context["comments"] = course.comments.select_related("author").order_by("-created_at")
         context["reviews"] = course.reviews.select_related("author").order_by("-updated_at")
         context["is_favorite"] = is_favorite
+        context["ai_question_form"] = AIQuestionForm()
         context["can_edit"] = self.request.user.is_authenticated and (
             self.request.user.is_staff or course.author == self.request.user
         )
@@ -185,6 +187,7 @@ class CoursePreviewView(OwnerOrStaffRequiredMixin, DetailView):
         context["comment_form"] = CourseCommentForm()
         context["review_form"] = CourseReviewForm()
         context["is_favorite"] = False
+        context["ai_question_form"] = AIQuestionForm()
         context["can_edit"] = True
         return context
 
